@@ -1,0 +1,65 @@
+
+<html>
+<!-- generated with Tcl's xmlgen-1.4 xmlgen] -->
+
+ <head>
+  <title>Overview &mdash; Packages to write XML or HTML with Tcl</title>
+  <style><!--
+    p {margin-left:1cm; text-align:justify; margin-right:1cm;}
+    *.n {margin-left: 0px; margin-right:0px;}
+    *.tab {margin-left: 1cm; margin-right: 1cm;}
+    *.ttab {
+      margin-left:15mm;
+      margin-right:15mm;
+      padding: 1mm;
+      font-family: monospace;
+      background-color: #eeeeee;
+    }
+    ul, ol {list-style-position: inside; text-align:justify;
+      margin-left:5mm; margin-right:20mm;}
+    acronym {font-style: oblique;}
+    -->
+  </style>
+ </head>
+ <body>
+  <table width="100%" style="border: 2px solid grey">
+   <tr>
+    <td width="20%" align="left">Overview</td>
+    <td align="center">Packages to write XML or HTML with Tcl</td>
+    <td width="20%" align="right">xmlgen</td>
+   </tr>
+  </table>
+<h2>Name</h2>
+<p class="tab">Overview &mdash; Packages to write XML or HTML with Tcl</p>
+<h2>Description</h2>
+<p>The <acronym>Tcl</acronym> package <code>xmlgen</code> allows to write <acronym>Tcl</acronym> code which
+    translates itself into <acronym>XML</acronym>.
+</p>
+<p>Every tag is made into a <em>markup command</em> which takes
+    attributes and the element's content as parameters and then prints
+    the <acronym>XML</acronym> tagged content. Of course, the content again can contain
+    markup commands.
+</p>
+<p>On top of <code>xmlgen</code> there is the package <code>htmlgen</code> which
+    comes with all the typical <acronym>HTML</acronym> tags predefined as markup
+    commands. In addition, sub-namespaces of <code>::htmlgen</code>
+    contain what you
+    could call <code>markup macros</code>. A markup macro's syntax resembles the
+    syntax of a markup command but creates not just a pair of tags
+    with content but a whole structure of tags nested always in the
+    same way. Currently <code>htmlgen::tab</code> and 
+    <code>htmlgen::sidenav</code> implement common navigation
+    structures for <acronym>HTML</acronym> sites.
+</p>
+  <h2>See Also</h2>
+  <p><a href="xmlgen.html">Xmlgen</a>, <a href="htmlgen.html">Htmlgen</a>, <a href="tab.html">Notebook Tabs</a>, <a href="sidenav.html">Navigation Bar</a>
+  </p>
+  <table width="100%" style="border: 2px solid grey">
+   <tr>
+    <td width="30%" align="left">Overview</td>
+    <td align="center">1.4</td>
+    <td width="30%" align="right">xmlgen</td>
+   </tr>
+  </table>
+ </body>
+</html>

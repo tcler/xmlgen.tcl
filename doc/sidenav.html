@@ -1,0 +1,151 @@
+
+<html>
+<!-- generated with Tcl's xmlgen-1.4 xmlgen] -->
+
+ <head>
+  <title>Navigation Bar &mdash; Left margin navigation for HTML</title>
+  <style><!--
+    p {margin-left:1cm; text-align:justify; margin-right:1cm;}
+    *.n {margin-left: 0px; margin-right:0px;}
+    *.tab {margin-left: 1cm; margin-right: 1cm;}
+    *.ttab {
+      margin-left:15mm;
+      margin-right:15mm;
+      padding: 1mm;
+      font-family: monospace;
+      background-color: #eeeeee;
+    }
+    ul, ol {list-style-position: inside; text-align:justify;
+      margin-left:5mm; margin-right:20mm;}
+    acronym {font-style: oblique;}
+    -->
+  </style>
+ </head>
+ <body>
+  <table width="100%" style="border: 2px solid grey">
+   <tr>
+    <td width="20%" align="left">Navigation Bar</td>
+    <td align="center">Left margin navigation for HTML</td>
+    <td width="20%" align="right">xmlgen</td>
+   </tr>
+  </table>
+<h2>Name</h2>
+<p class="tab">Navigation Bar &mdash; Left margin navigation for HTML</p>
+<h2>Synopsis</h2>
+<p>
+ <code>package require htmlgen</code>
+</p>
+<p>
+ <code>::htmlgen::sidenav::sidenav <em>pathvar url tree</em> \ <br />&nbsp;&nbsp; <em>?attr=value ...? ?control? ?body ...?</em></code>
+</p>
+<h2>Description</h2>
+<p>The command <code>sidenav</code> is a markup macro which creates a
+    navigation bar on the left side of the page and puts the 
+    <em>body</em> information into the right side of the page. The
+    navigation bar's width, background color and so an can be
+    controlled by 
+    <a href="#attributes">attributes</a> as if it were a normal html
+    markup command.
+</p>
+<p>The <em>pathvar</em> is the name of the variable which selects a
+    certain node within the given <em>tree</em>. The <em>url</em> is used to
+    construct <code>href</code>-links in the page. The details are described
+    below.
+</p>
+<h3>The <em>tree</em> parameter</h3>
+<p>The <em>tree</em> parameter of <code>sidenav</code> must be a list of 
+    <em>3*n</em> elements
+</p>
+<p class="ttab">{ name title subtree name title subtree ... }</p>
+<p>An Example:
+</p>
+<p class="ttab">set&nbsp;Navtree&nbsp;{<br />
+&nbsp;&nbsp;oview&nbsp;"Overview"&nbsp;.<br />
+&nbsp;&nbsp;xmlgen&nbsp;"XML&nbsp;generator"&nbsp;.<br />
+&nbsp;&nbsp;htmlgen&nbsp;"HTML&nbsp;generator"&nbsp;{<br />
+&nbsp;&nbsp;&nbsp;&nbsp;tab&nbsp;"Notebook&nbsp;Tabs"&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;nav&nbsp;"Sidebar&nbsp;Navigation"&nbsp;.<br />
+&nbsp;&nbsp;}<br />
+} 
+
+</p>
+<p>The first element of every triple is a shortcut name. Consider it
+    as an identifier for the node. It will be used programmatically
+    and will be passed around in URLs. The 2nd element is a text which
+    will show up on the HTML page as a link. Each of the subtrees must
+    have the same multiple-triple structure again <b>or</b> must be a
+    single dot 
+    indicating that the respective node is a leaf node.
+</p>
+<h3>The <em>pathvar</em> and the <em>url</em> parameter</h3>
+<p>The <em>pathvar</em> parameter must contain the name of a
+    variable. It servers two purposes. First, the name will be in URL
+    construction and second, the variable itself must contain a path
+    into the tree. As an example, consider the following call to 
+    <code>sidenav</code> which makes use of <code>tcllib</code>'s package 
+    <code>::ncgi</code>.
+</p>
+<p class="ttab">set Path [::ncgi::value Path [list oview]]<br />
+    set url [::ncgi:urlStub]<br />
+    sidenav Path $url $Navtree ! { ... }
+</p>
+<p>We use <code>::ncgi::value</code> to retrieve the selected path into the
+    tree from the calling URL. Just in case the URL was typed in by
+    hand or does not contain the variable <code>Path</code> for other
+    reasons, we specify <code>[list oview]</code> as the default path.
+    With <code>::ncgi::urlStub</code> the URL
+    which called our script is retrieved. All links created in the
+    navigation bar will look like
+</p>
+<p class="ttab">${url}?Path=[cgiset $pathForTheLink]</p>
+<p>If such a link is followed, the flow of control will arrive again
+    in the script, <code>::ncgi::value</code> will set <code>Path</code> to the
+    value of <code>pathForTheLink</code> and that path will be marked as
+    selected in the navigation bar.
+</p>
+<h3>The <em>control</em> and <em>body</em> parameters</h3>
+<p>These parameters work like for normal markup commands as
+    described in <a href="&#34;xmlgen&#34;">xmlgen</a>. Within the body, you will most likely
+    want to use the content of the variable passed by <em>pathvar</em> to
+    switch between different contents depending on the selected node.
+</p>
+<a name="attributes">
+ <h3>The <em>attr</em> parameters</h3>
+</a>
+<p>Syntactically they behave exactly like for normal markup commands as
+    described in <a href="&#34;xmlgen&#34;">xmlgen</a>. However, since <code>sidenav</code> creates an
+    elaborate HTML structure, they end up distributed over several
+    HTML tags.
+</p>
+<p>To understand their meaning, it is necessary to know that 
+    <code>sidenav</code> create a &lt;table&gt; with two columns. The left
+    column contains the navigation bar and the right one is filled by the 
+    <em>body</em> parameter. Arbitrary attributes can be placed into the 
+    &lt;table&gt; tag as well as into the &lt;td&gt; tags of the left
+    and the right column. This is done by prefixing the attributes
+    with <code>main.</code>, <code>nav.</code> or <code>txt.</code> respectively.
+</p>
+<p>For example passing <code>nav.width=200</code> and 
+    <code>nav.bgcolor=gray</code> to 
+    <code>sidenav</code> will result in a gray navigation bar with a width
+    of 200 pixels. Note that no sanity check is performed on those
+    attributes. They are just pasted into the respective HTML tags.
+</p>
+<h4>The <code>curColor</code> attribute</h4>
+<p>There is currently one attribute which is not just pasted into one
+    of the table tags, namely <code>curColor</code> (no prefix necessary). It
+    should be an acceptable color value and determines the text color
+    for the selected branch of the navigation tree.
+</p>
+  <h2>See Also</h2>
+  <p><a href="overview.html">Overview</a>, <a href="xmlgen.html">Xmlgen</a>, <a href="htmlgen.html">Htmlgen</a>, <a href="tab.html">Notebook Tabs</a>
+  </p>
+  <table width="100%" style="border: 2px solid grey">
+   <tr>
+    <td width="30%" align="left">Navigation Bar</td>
+    <td align="center">1.4</td>
+    <td width="30%" align="right">xmlgen</td>
+   </tr>
+  </table>
+ </body>
+</html>

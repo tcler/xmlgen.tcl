@@ -1,0 +1,98 @@
+
+			      Announcing
+				xmlgen
+			     version 1.4
+
+for easy and dynamic creation of HTML/XML with Tcl.
+
+===== WHAT's NEW?
+
+1) Empty attributes are allowed and are simply ignored. This helps to
+use generated attributes like in
+
+  set attr [trickyAttributeGeneration]
+  p $attr align=center Some text.
+
+Previously, $attr would not have been interpreted as an
+attribute-value pair if it had been the empty string. Now, if it is
+the empty string, it is ignored and the result will be
+
+  <p align=center>Some text</p>
+
+2) When using control character '-', the close tag is put just after
+the content now instead of being put indented on the following line.
+
+3) Insertion of newlines and indentation in front of opening and
+closing tags is now fully configurable. See the new proc setTagformat.
+
+
+
+===== WHERE TO GET?
+
+Xmlgen was integrated as a package into the TclXML repository on
+sourceforge. Look at 
+
+  http://sourceforge.net/projects/tclxml/
+
+and follow the links.
+
+===== WHAT IS IT?
+
+Inspired by discussions about namespacing cgi.tcl and the difference
+between cgi.tcl and several packages in tcllib, I prepared xmlgen and,
+on top of it htmlgen.
+
+Similar to cgi.tcl, an XML tag is defined as a Tcl command. It prints
+the opening tag, then executes its body argument and then prints the
+closing tag. The body argument, being a script, will again contain
+markup commands which behaves in the same way. In short, you write
+
+  set text "some prepared text"
+  ul color=red ! {
+    li - one 
+    li - two can have some [b bold]
+    li - $text
+  }
+  p + {
+    When you use the "!", the body of the markup command is evaluated,
+    with "+" like here, it is passed through [em subst]. With the "-"
+    it is taken as is. In all three cases the result is printed. Only
+    if none of them is given, the result is taken as is and simply
+    returned.
+  }   
+
+to get
+
+  <ul color="red">
+   <li>one
+   </li>
+   <li>two can have some <b>bold</b>
+   </li>
+   <li>some prepared text
+   </li>
+  </ul>
+  <p>When you use the "!", the body of the markup command is evaluated,
+    with "+" like here, it is passed through <em>subst</em>. With the "-"
+    it is taken as is. In all three cases the result is printed. Only
+    if non of them is given, the result is taken as is and simply
+    returned.
+  </p>
+
+
+Currently, xmlgen contains just two important commands, namely
+[declartag], which creates a proc for a tag, and [buffer], which
+collects the output of all the markup commands in a variable for later
+reuse.
+
+Package htmlgen builts on that and declares all HTML tags as commands.
+
+
+===== WHAT IT IS NOT!
+
+In contrast to cgi.tcl, htmlgen does not contain any special knowledge
+about individual HTML tags. In addition, it does not have CGI parsing,
+because there is already package ::ncgi in tcllib.
+
+
+Comments welcome,
+  Harald Kirsch

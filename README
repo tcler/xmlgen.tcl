@@ -1,0 +1,78 @@
+XMLGEN -- A module to generate XML and/or HTML by writing Tcl code which
+          translates itself.
+          (C) 2002 Harald Kirsch
+
+WHAT IS IT?
+===========
+
+You declare the XML tags you want as Tcl commands. Then you can use
+the natural bracing structure of Tcl to write XML while having all the
+niceties of the script language to define shortcuts or add dynamic
+content. 
+
+A simple example based on htmlgen, a module which predefines all the
+HTML tags.
+
+set Title "A Simple Example"
+html ! {
+  head ! {
+    title - $Title
+  }
+  body ! {
+    h1 - $Title
+    p - As you can see, title and major headline agree.
+  }
+}
+
+INSTALLATION
+============
+This package contains three pieces to be installed in different
+directories of your choice:
+
+  1) the Tcl package xmlgen (contains htmlgen)
+  2) HTML documentation for both
+  3) cgi-enabled documentation, mainly here as a proof of concept and
+     as an example
+
+The QUICK INSTALL goes like
+
+  tclsh bras-sa prefix=/usr/local cgi_prefix=/home/html/cgi install
+
+This will create the following directories with some content:
+
+  /usr/local/lib/xmlgen-1.0       (possibly different version number)
+  /usr/local/doc/xmlgen-1.0       (dto.)
+  /home/html/cgi/xmlgen-1.0	  (dto.)
+    
+NOTES:
+
+1) For the cgi-enabled documentation to work you need two things:
+  a) Convince your web server to run $CGDIR/index as a Tcl script.
+  b) Make sure this script can find a recent tcllib. It needs the
+     package ncgi.
+
+2) If you want to set the subdirectory names yourself, then specify
+*all* of PKGDIR, DOCDIR and CGIDIR instead of prefix and cgi_prefix.
+
+3) In any case, the parent directory of PKGDIR, /usr/local/lib in the
+example, MUST appear in the auto_path variable of the tclsh you intend
+to use. (HINT: auto_path is initialized also from the TCLLIBPATH
+environment variable.)
+
+4) bras-sa is a standalone version of bras, the make replacement
+written in Tcl to be found at http://bras.berlios.de/ . It uses the
+brasfile in this directory to do its work.
+
+
+LICENSE 
+=======
+BSD derived, see file LICENSE	  
+
+
+CONTACT
+=======
+Harald Kirsch
+pifpafuf bei gmx punkt de
+
+----------------------
+last modified: $Date: 2002/05/27 21:50:52 $

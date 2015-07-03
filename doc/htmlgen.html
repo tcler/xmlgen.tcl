@@ -1,0 +1,176 @@
+
+<html>
+<!-- generated with Tcl's xmlgen-1.4 xmlgen] -->
+
+ <head>
+  <title>Htmlgen &mdash; Writing HTML with Tcl</title>
+  <style><!--
+    p {margin-left:1cm; text-align:justify; margin-right:1cm;}
+    *.n {margin-left: 0px; margin-right:0px;}
+    *.tab {margin-left: 1cm; margin-right: 1cm;}
+    *.ttab {
+      margin-left:15mm;
+      margin-right:15mm;
+      padding: 1mm;
+      font-family: monospace;
+      background-color: #eeeeee;
+    }
+    ul, ol {list-style-position: inside; text-align:justify;
+      margin-left:5mm; margin-right:20mm;}
+    acronym {font-style: oblique;}
+    -->
+  </style>
+ </head>
+ <body>
+  <table width="100%" style="border: 2px solid grey">
+   <tr>
+    <td width="20%" align="left">Htmlgen</td>
+    <td align="center">Writing HTML with Tcl</td>
+    <td width="20%" align="right">xmlgen</td>
+   </tr>
+  </table>
+<h2>Name</h2>
+<p class="tab">Htmlgen &mdash; Writing HTML with Tcl</p>
+<h2>Synopsis</h2>
+<p>
+ <code>package require htmlgen</code>
+</p>
+<p>
+ <code>::htmlgen::<em>htmltag</em> <em>?attr=value ...? ?body ...?</em></code>&nbsp;(for every <acronym>HTML</acronym> tag)
+</p>
+<p>
+ <code>::htmlgen::buffer <em>varname</em> <em>body</em></code>
+</p>
+<p>
+ <code>::htmlgen::put <em>?arg ...?</em></code>
+</p>
+<p>
+ <code>::htmlgen::esc <em>?arg ...?</em></code>
+</p>
+<h2>Description</h2>
+<p>The package provides one <acronym>Tcl</acronym> command for every <acronym>HTML</acronym> tag. It
+    allows to write structured <acronym>Tcl</acronym> code which, when executed,
+    generates structured <acronym>HTML</acronym> output. The benefits are:
+</p>
+<ul>
+ <li>pages can contain dynamic content</li>
+ <li>in contrast to server parsed <acronym>HTML</acronym> there is no mix of
+      <acronym>HTML</acronym> syntax with PHP/JSP/Perl/Python/<acronym>Tcl</acronym> syntax.
+ </li>
+ <li>compared to other <acronym>CGI</acronym> languages there is no need for
+      explicit <code>put/print/echo</code> commands.
+ </li>
+ <li>content and styles can be stored in <acronym>Tcl</acronym> variables and then reused for consistent look and feel.
+ </li>
+ <li>the scarcity of <acronym>Tcl</acronym>'s syntax allows for a clearly structured
+      page source, in particular with a <acronym>Tcl</acronym>-aware editor.
+ </li>
+</ul>
+<p>In fact I consider <code>htmlgen</code> to be what <acronym>HTML</acronym> should better
+    have been in the first place. The individual commands are
+    described below.
+</p>
+<dl class="tab">
+ <dt>
+  <code>::htmlgen::a <em>?attr=value ...? ?ctrl? ?body ...?</em><br /></code>
+  <code>::htmlgen::p <em>?attr=value ...? ?ctrl? ?body ...?</em><br /></code>
+  <code>::htmlgen::table <em>?attr=value ...? ?ctrl? ?body ...?</em><br /></code>
+  <code>::htmlgen::...</code>and so on for other tags.
+ </dt>
+ <dd>
+  <p class="n">Every such <em>markup command</em> takes a list of attribute-value
+	pairs and 
+	one or more body arguments. It then generates <acronym>HTML</acronym> where the
+	open tag contains all the attribute-value pairs and the close tag
+	is never omitted. You can write
+  </p>
+  <p class="ttab">ul {style=color:red} ! {<br />
+	  &nbsp; li - one<br />
+	  &nbsp; li - two<br />
+	}
+  </p>
+  <p class="n">to generate</p>
+  <p class="ttab">&lt;ul style=&#34;color:red&#34;&gt;<br />
+	&nbsp; &lt;li&gt;one&lt;/li&gt;<br />
+	&nbsp; &lt;li&gt;two&lt;/li&gt;<br />
+	&lt;/ul&gt;
+  </p>
+  <p class="n">If the first argument which is not an attribute-value pair
+	contains exactly one character, it is used to control the
+	handling of the body according to the following table.
+  </p>
+  <table align="center" frame="box" rules="all" cellpadding="2">
+   <tr><th>character</th> <th>action</th></tr>
+   <tr><td>"!"</td> <td>pass to [eval] and print</td></tr>
+   <tr><td>"+"</td> <td>pass to [subst] and print</td></tr>
+   <tr><td>"-"</td> <td>take as is and print</td></tr>
+   <tr><td>"." (dot)</td> <td>take as is and return</td></tr>
+   <tr><td>(other)</td> <td>error</td></tr>
+  </table>
+  <p class="n">If the first non attribute-value argument has more than one
+	character, it is considered to be the first body argument and
+	the control character defaults to "." (dot) meaning that the
+	body is taken as is, surrounded by the tags and then
+	returned.
+  </p>
+  <p class="n">Please consult <em>Generated Markup Commands</em> in 
+	the manual page for <a href="xmlgen.html">xmlgen</a> for the more details. It also
+	describes, how attribute-value pairs are parsed.
+  </p>
+ </dd>
+ <dt>
+  <p class="n">
+   <code>::htmlgen::extra::tab <em>ID url active tabs ?attr=value ...? ?body ...?</em></code>
+  </p>
+ </dt>
+ <dd>
+  <p class="n"><b>(experimental)</b>
+	Creates <code>table</code> based notebook tabs. Useful only for 
+	<acronym>CGI</acronym> scripts. Nice layout in style-aware
+	browsers. Useful layout still in Navigator-4.7.
+	<em>ID</em> is the name of a variable you'll find with
+	<code>::ncgi::parse</code>. The content of that variable is the name
+	of the selected tab. The available tabs are defined in 
+	<em>tabs</em> which must be a list of pairs 
+	<em>tabname display</em>, where
+	<em>tabname</em> is what you'll find in the <acronym>CGI</acronym> variable 
+	<code>$ID</code> and <em>display</em> is what is printed in the tab on
+	screen. Parameter <em>active</em> must be one of the given 
+	<em>tabname</em> names. It will be rendered as the selected tab.
+  </p>
+  <p class="n">You can find an example in <code>tab.tcl</code>
+  </p>
+ </dd>
+ <dt>
+  <p class="n">
+   <code>::htmlgen::buffer <em>varname</em> <em>body</em></code>
+  </p>
+ </dt>
+ <dd>See manual for <a href="xmlgen.html">xmlgen</a>.</dd>
+ <dt>
+  <p class="n">
+   <code>::htmlgen::put <em>?arg ...?</em></code>
+  </p>
+ </dt>
+ <dd>See manual for <a href="xmlgen.html">xmlgen</a>.</dd>
+ <dt>
+  <p class="n">
+   <code>::htmlgen::esc <em>?arg ...?</em></code>
+  </p>
+ </dt>
+ <dd>See manual for <a href="xmlgen.html">xmlgen</a>.</dd>
+</dl>
+<h2>Author</h2>
+<p><a href="mailto:pifpafpuf@gmx.de">Harald Kirsch</a></p>
+  <h2>See Also</h2>
+  <p><a href="overview.html">Overview</a>, <a href="xmlgen.html">Xmlgen</a>, <a href="tab.html">Notebook Tabs</a>, <a href="sidenav.html">Navigation Bar</a>
+  </p>
+  <table width="100%" style="border: 2px solid grey">
+   <tr>
+    <td width="30%" align="left">Htmlgen</td>
+    <td align="center">1.4</td>
+    <td width="30%" align="right">xmlgen</td>
+   </tr>
+  </table>
+ </body>
+</html>

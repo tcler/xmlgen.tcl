@@ -1,0 +1,84 @@
+#!/bin/sh 
+# \
+exec tclsh $0 "$@"
+########################################################################
+
+set auto_path [concat [list ..] $auto_path]
+package require xmlgen
+
+set VERSION [lindex {$Revision: 1.1 $} 1]
+set DATE [string map {/ -} [lindex {$Date: 2002/05/27 20:11:52 $} 1]]
+
+
+set tags {
+  appendix application authorinitials book bookinfo chapter
+  chapterinfo command date emphasis filename footnote formalpara
+  highlights imageobject informalexample inlinemediaobject
+  itemizedlist listitem note option para phrase programlisting
+  revhistory revision revnumber revremark section simpara subtitle
+  textobject title ulink
+}
+foreach tag $tags { ::xmlgen::declaretag $tag }
+
+chapter fileref=xmlgen.xml ! {
+  title - Xmlgen
+  subtitle - Writing XML with Tcl
+  chapterinfo ! {
+    revhistory ! {
+      revision ! {
+	revnumber - $VERSION
+	date - $DATE
+	authorinitials - HK
+      }
+    }
+  }
+
+  para + {
+    The Tcl package xmlgen allows to write Tcl code which translates
+    itself into XML. 
+  }
+  section ! {
+    title - Introduction
+    para + {
+      Every tag is made into a markup command which takes attributes and
+      the element's content as parameters and then prints the XML tagged
+      content. Of course, the content again can contain markup
+      commands.
+    }
+    
+    para + {
+      On top of xmlgen there is the package htmlgen which comes with all
+      the typical HTML tags predefined as markup commands. In addition,
+      htmlgen::extra contains what you could call markup macros. A
+      markup macro's syntax resembles the syntax of a markup command but
+      creates not just a pair of tags with content but a whole structure
+      of tags nested always in the same way. Currently
+      htmlgen::extra::tab and htmlgen::extra::sidenav implement common
+      navigation structures for HTML sites.  
+    }
+  }
+
+  section ! {
+    title - Download and Installation
+    para + {
+      You find the package on the 
+      [ulink url=http://sourceforge.net/projects/tclxml/ TclXML]
+      page at SourceForge. Installation instructions are included, but
+      since no compilation is required, installation is not much more
+      than copying files to certain places.
+    }
+  }
+
+  section ! {
+    title - Documentation
+    para + {
+      The [ulink url=xmlgen/xmlgen.html manual pages] are available
+      online. 
+    }
+  }
+}
+puts ""
+
+### Local Variables: ###
+### mode: tcl ###
+### End: ###

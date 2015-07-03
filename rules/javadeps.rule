@@ -1,0 +1,49 @@
+########################################################################
+#
+# This file is part of bras, a program similar to the (in)famous
+# `make'-utitlity, written in Tcl.
+#
+# Copyright (C) 2002 Harald Kirsch
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+# $Revision: 1.1 $, $Date: 2002/05/27 20:08:53 $
+########################################################################
+
+#
+# Automatically updated and cached dependencies for a java source file. 
+# Set the following variables in your brasfile:
+#  JAVAC -- name of C++ compiler
+#  JDEPOPTS -- option(s) which let your compiler emit make-dependencies
+#    for a given source file.
+#  JDEPEXCLUDE -- regular expression which specifies which
+#    dependencies need not be taken into account. A good start for
+#    this is {^/usr/}.
+#
+# This only works currently with JAVAC=="jikes". If jikes is not used,
+# the name of the dependency is just copied into the dependency cache
+# file. But you may want to override ::bras::ruleHelper::updCache_J
+#
+########################################################################
+
+PatternMake {.*[.]dc} .java {[oldcache $target $d]} {
+  ::bras::ruleHelper::updCache_J \
+      $target [lindex $deps 0] $JAVAC $JDEPOPTS JDEPEXCLUDE
+}
+########################################################################
+########################################################################
+##### Local Variables: #
+##### mode:tcl #
+##### End: #

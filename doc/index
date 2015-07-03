@@ -1,0 +1,93 @@
+#!/bin/sh
+#\
+exec tclsh $0 "$@"
+
+########################################################################
+#
+# Little demo of ../sidenav.tcl as well a entry point for
+# documentation. 
+#
+# This script must be run as a cgi-script. In addition, the following
+# is needed:
+#   1) ncgi from tcllib
+#   2) xmlgen
+# Since it is often not easy to add something to an environment
+# variable such that a cgi-script sees it, the easiest way to get this
+# going is probably as follows:
+#   a) copy this whole directory to a place where your http server
+#   allows you to execute cgi scripts
+#   b) enter the parent directories of tcllib and xmlgen into the
+#   variables prepared below.
+#
+# (C) 2002 Harald Kirsch
+# $Revision: 1.2 $, $Date: 2002/08/07 17:33:14 $
+#
+########################################################################
+
+## Parent directory of tcllib
+set TCLLIB {}
+
+## Parent directory of xmlgen
+set XMLGEN /home/kir/work
+
+########################################################################
+set auto_path [concat [list $TCLLIB $XMLGEN] $auto_path]
+
+package require htmlgen
+package require tcllib
+
+namespace import ::htmlgen::*
+namespace import ::htmlgen::sidenav::sidenav
+
+source common.tcl
+########################################################################
+
+set Title "Xmlgen Documentation"
+
+proc overview {} {
+  uplevel 1 source overview
+}
+proc xmlgen {} {
+  uplevel 1 source xmlgen
+}
+proc htmlgen {} {
+  uplevel 1 source htmlgen
+}
+proc htmlgen.sidenav {} {
+  uplevel 1 source sidenav
+}
+########################################################################
+::ncgi::parse
+
+set url [ncgi::urlStub];		# url of this very script
+set Path [ncgi::value Path {overview}];	# selected sub-page
+#set Path {htmlgen sidenav}
+
+if {""!="$url"} {
+  ## seems like we were called as a cgi-script
+  puts "Content-Type: text/html\n\n"
+  flush stdout
+}
+
+
+html ! {
+  head ! {
+    title - $Title
+    putStyle 
+  }
+  body ! {
+    sidenav Path $url $navbar nav.bgcolor=\#dddd55 ! {
+      set c [join $Path .]
+      if {[info procs $c]!=""} {
+	$c
+      } else {
+	p - No information yet about [join $Path .].
+      }
+    }
+  }
+}
+########################################################################
+
+### Local Variables: ###
+### mode: tcl ###
+### End: ###

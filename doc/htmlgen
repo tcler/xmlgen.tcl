@@ -1,0 +1,179 @@
+#!/bin/sh
+#\
+exec tclsh $0 -all "$@"
+########################################################################
+#
+# Given that this package deals with generating xml and is the base
+# for package htmlgen, it should come as no surprise, that the
+# documentation is written with the package htmlgen.
+#
+# This script is not expected to be installed. It must be run as part
+# of a built process to generate the documentation.
+#
+# (C) 2002 Harald Kirsch
+# $Revision: 1.2 $, $Date: 2002/05/27 21:50:54 $
+########################################################################
+
+if {[lindex $argv 0]=="-all"} {
+  ## This script was called on its own, not as part of another script. 
+  set auto_path [concat [file dir [pwd]] $auto_path]
+  package require htmlgen
+  namespace import ::htmlgen::*
+  set xmlgenURL [a href=xmlgen.html xmlgen]
+
+  source common.tcl
+
+} else {
+  set xmlgenURL [a href=${url}?Path=xmlgen [code . xmlgen]]
+}
+
+set node htmlgen
+set nodeText [getNodeText $node $navbar]
+set shorttitle  "Writing HTML with Tcl"
+
+buffer page {
+  h2 - Name
+  p class=tab - [makeTitle $nodeText $shorttitle]
+
+
+  h2 - Synopsis
+  p ! code - package require htmlgen
+  p ! {
+    code - ::htmlgen::[em htmltag] [em ?attr=value ...? ?body ...?]
+    put &nbsp\;(for every $HTML tag)
+  }
+  p !code - ::htmlgen::extra::tab \
+	  [em ID url active tabs ?attr=value ...? ?body ...?]
+  p ! code - ::htmlgen::buffer [em varname] [em body]
+  p ! code - ::htmlgen::put [em ?arg ...?]
+  p ! code - ::htmlgen::esc [em ?arg ...?]
+
+
+  h2 - Description
+  p + {
+    The package provides one $Tcl command for every $HTML tag. It
+    allows to write structured $Tcl code which, when executed,
+    generates structured $HTML output. The benefits are:
+  }
+  ul  ! {
+    li - pages can contain dynamic content
+    li + { 
+      in contrast to server parsed $HTML there is no mix of
+      $HTML syntax with PHP/JSP/Perl/Python/$Tcl syntax.
+    }
+    li + {
+      compared to other [acronym CGI] languages there is no need for
+      explicit [code put/print/echo] commands.
+    }
+    li + content and styles can be stored in $Tcl variables and \
+	then reused for consistent look and feel.
+    li + {
+      the scarcity of $Tcl's syntax allows for a clearly structured
+      page source, in particular with a ${Tcl}-aware editor.
+    }
+  }
+  p + {
+    In fact I consider [code htmlgen] to be what $HTML should better
+    have been in the first place. The individual commands are
+    described below.
+  }
+  dl class=tab ! {
+    dt ! {
+      code - ::htmlgen::a [em ?attr=value ...? ?ctrl? ?body ...?][br]
+      code - ::htmlgen::p [em ?attr=value ...? ?ctrl? ?body ...?][br]
+      code - ::htmlgen::table [em ?attr=value ...? ?ctrl? ?body ...?][br]
+      code - ::htmlgen::... 
+      put and so on for other tags.
+      #table width=80% ! tr - [td align=right etc.]
+      #puts "&nbsp;&nbsp;etc."
+    }
+    dd ! {
+      p class=n + {
+	Every such [em markup command] takes a list of attribute-value
+	pairs and 
+	one or more body arguments. It then generates $HTML where the
+	open tag contains all the attribute-value pairs and the close tag
+	is never omitted. You can write
+      }
+      dispcode + {
+	ul {style=color:red} ! {[br]
+	  &nbsp; li - one[br]
+	  &nbsp; li - two[br]
+	}
+      }
+      p class=n - to generate
+      dispcode + {
+	[esc <ul style="color:red">][br]
+	&nbsp; [esc <li>one</li>][br]
+	&nbsp; [esc <li>two</li>][br]
+	[esc </ul>]
+      }
+      p class=n + {
+	If the first argument which is not an attribute-value pair
+	contains exactly one character, it is used to control the
+	handling of the body according to the following table.
+      }
+      table align=center frame=box rules=all cellpadding=2 ! {
+	tr - [th character] [th action]
+	tr - [td {"!"}] [td {pass to [eval] and print}]
+	tr - [td {"+"}] [td {pass to [subst] and print}]
+	tr - [td {"-"}] [td {take as is and print}]
+	tr - [td {"." (dot)}] [td take as is and return]
+	tr - [td {(other)}] [td error]
+      }
+      p class=n + {
+	If the first non attribute-value argument has more than one
+	character, it is considered to be the first body argument and
+	the control character defaults to "." (dot) meaning that the
+	body is taken as is, surrounded by the tags and then
+	returned. 
+      }
+      p class=n + {
+	Please consult [em Generated Markup Commands] in 
+	the manual page for ${xmlgenURL} for the more details. It also
+	describes, how attribute-value pairs are parsed.
+      }
+    }
+    dt ! {
+      p class=n ! code - ::htmlgen::extra::tab \
+	  [em ID url active tabs ?attr=value ...? ?body ...?]
+    }
+    dd ! {
+      p class=n + {
+	[b (experimental)]
+	Creates [code table] based notebook tabs. Useful only for 
+	[acronym CGI] scripts. Nice layout in style-aware
+	browsers. Useful layout still in Navigator-4.7.
+	[em ID] is the name of a variable you'll find with
+	[code ::ncgi::parse]. The content of that variable is the name
+	of the selected tab. The available tabs are defined in 
+	[em tabs] which must be a list of pairs 
+	[em {tabname display}], where
+	[em tabname] is what you'll find in the [acronym CGI] variable 
+	[code \$ID] and [em display] is what is printed in the tab on
+	screen. Parameter [em active] must be one of the given 
+	[em tabname] names. It will be rendered as the selected tab.
+      }
+      p class=n + {
+	You can find an example in [code tab.tcl]
+      }
+    }
+    dt ! p class=n ! code - ::htmlgen::buffer [em varname] [em body]
+    dd - See manual for ${xmlgenURL}.
+    dt ! p class=n ! code - ::htmlgen::put [em ?arg ...?]
+    dd - See manual for ${xmlgenURL}.
+    dt ! p class=n ! code - ::htmlgen::esc [em ?arg ...?]
+    dd - See manual for ${xmlgenURL}.
+  }
+								    
+  h2 - Author
+  p -  [a {href=mailto:pifpafpuf@gmx.de} Harald Kirsch]
+
+}
+
+showpage [lindex $argv 0] $node $nodeText $shorttitle $page
+########################################################################
+
+### Local Variables: ###
+### mode: tcl ###
+### End: ###

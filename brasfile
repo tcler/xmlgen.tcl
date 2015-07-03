@@ -1,0 +1,93 @@
+########################################################################
+#
+# brasfile -- building and installing xmlgen at client's site
+#
+# call as
+#
+# tclsh bras-sa prefix=/some/dir/mentioned/in/$auto_path
+#
+########################################################################
+## fetch version info
+set dir [pwd] ; source pkgIndex.tcl
+
+## Where shall things be installed?
+getenv prefix /usr/local
+
+## To make sure that 'package require xmlgen' works, the following
+## directory MUST appear in the variable `auto_path' of the tclsh you
+## intend to use. 
+## HINT 1: Your tclsh's auto_path is initilized also from your
+##         enviroment variable TCLLIBPATH
+## HINT 2: TCLLIBPATH, if set, must be a Tcl list, not the more common
+##         (semi)colon separated stuff like in PATH or CLASSPATH
+getenv LIBDIR [file join $prefix lib]
+
+## The package files actually end up in this directory.
+getenv PKGDIR [file join $LIBDIR xmlgen-$VERSION]
+
+## HTML documentation is copied here.
+getenv DOCDIR [file join $prefix doc xmlgen-$VERSION]
+
+## The documentation is also available as cgi-scripts written with
+## htmlgen. If given, the scripts are copied into a subdirectory of
+## cgi_prefix. 
+getenv cgi_prefix {}
+
+getenv CGIDIR [file join $cgi_prefix xmlgen-$VERSION]
+
+########################################################################
+# NO NEED TO CHANGE ANYTHING BEYOND THIS POINT
+########################################################################
+## save my soul
+if {"[pwd]"=="/home/kir/work/xmlgen" && ![info exist ::env(do)]} {
+  puts "Harald, do you really want that now? Then use do=1 on cmdline."
+  exit
+}
+
+## Load some voodoo magic
+include [file join $::bras::base install.rule]
+
+## set package targets
+foreach x {pkgIndex.tcl xmlgen.tcl htmlgen.tcl sidenav.tcl tab.tcl} {
+  lappend TPKG [file join $PKGDIR $x 0644]
+}
+
+## set documentation targets
+searchpath [list . doc]
+foreach x [glob doc/*.html] {
+  lappend TDOC [file join $DOCDIR [file tail $x] 0644]
+}
+
+## set cgi targets, but only if requested.
+set TCGI {}
+if {""!="$cgi_prefix"} {
+  foreach x {overview xmlgen htmlgen sidenav common.tcl} {
+    lappend TCGI [file join $CGIDIR $x 0644]
+  }
+  lappend TCGI [file join $CGIDIR index 0755]  
+}
+
+Make all {[updated doc/index.fixed]} .relax.
+Make install {[updated [concat $TPKG $TDOC $TCGI]]} .relax.
+
+## The main cgi script gets LIBDIR patched in to make sure it always
+## finds package xmlgen
+Newer doc/index.fixed doc/index {
+  patchFile [lindex $deps 0] $target \
+      "set XMLGEN \[^ \n\]+" "set XMLGEN $LIBDIR\n"
+}
+
+########################################################################
+proc patchFile {from to args} {
+  set in [open $from]; set text [read $in]; close $in
+  foreach {pat rep} $args {
+    if {![regsub -all $pat $text $rep text]} {
+      puts stderr "could not apply patch `$pat'->`$rep' to `$from'"
+      exit 1
+    }
+  }
+  set out [open $to w]
+  puts -nonewline $out $text
+  close $out
+}
+########################################################################

@@ -1,0 +1,187 @@
+#!/bin/sh
+#\
+exec tclsh $0 -all "$@"
+########################################################################
+#
+# Given that this package deals with generating xml and is the base
+# for package htmlgen, it should come as no surprise, that the
+# documentation is written with the package htmlgen.
+#
+# This script is not expected to be installed. It must be run as part
+# of a built process to generate the documentation.
+#
+# (C) 2002 Harald Kirsch
+# $Revision: 1.2 $, $Date: 2002/08/07 17:33:14 $
+########################################################################
+if {[lindex $argv 0]=="-all"} {
+  ## This script was called on its own, not as part of another script. 
+  set auto_path [concat [file dir [pwd]] $auto_path]
+  package require htmlgen
+  namespace import ::htmlgen::*
+  set xmlgenURL [a href="xmlgen" xmlgen]
+
+  source common.tcl
+
+} else {
+  set xmlgenURL [a href=${url}?Path=xmlgen [code . xmlgen]]
+}
+
+set node [list htmlgen sidenav]
+set nodeText [getNodeText $node $navbar]
+set shorttitle "Left margin navigation for HTML"
+
+
+proc fixindent {text} {
+  regsub -all "\t" $text "        " text
+  set text [string trim $text " "]
+  regexp "^\n +" "$text" blanks
+  set text [string trim $text]
+  regsub -all $blanks $text "\n" text
+  regsub -all " " $text "\\&nbsp;" text
+  regsub -all "\n" $text "[br]\n" text
+  return $text
+}
+
+buffer page {
+  h2 - Name
+  p class=tab - [makeTitle $nodeText $shorttitle]
+
+
+  h2 - Synopsis
+  p ! code - package require htmlgen
+  p ! {
+    code - ::htmlgen::sidenav::sidenav \
+	[em pathvar url tree] \\ [br]&nbsp\;&nbsp\; \
+	[em ?attr=value ...? ?control? ?body ...?]
+  }
+  h2 - Description
+  p + {
+    The command [code sidenav] is a markup macro which creates a
+    navigation bar on the left side of the page and puts the 
+    [em body] information into the right side of the page. The
+    navigation bar's width, background color and so an can be
+    controlled by 
+    [a href=\#attributes attributes] as if it were a normal html
+    markup command.
+  }
+  p + {
+    The [em pathvar] is the name of the variable which selects a
+    certain node within the given [em tree]. The [em url] is used to
+    construct [code href]-links in the page. The details are described
+    below.
+  }
+  #######################
+  h3 - The [em tree] parameter
+  p + { 
+    The [em tree] parameter of [code sidenav] must be a list of 
+    [em 3*n] elements
+  }
+  dispcode - \{ name title subtree  name title subtree ... \}
+  p + {
+    An Example:
+  }
+  dispcode ! {
+    set tmp {
+      set Navtree {
+	oview "Overview" .
+	xmlgen "XML generator" .
+	htmlgen "HTML generator" {
+	  tab "Notebook Tabs" .
+	  nav "Sidebar Navigation" .
+	}
+      }
+    }   
+    put [fixindent $tmp] \n
+  }
+  p + {
+    The first element of every triple is a shortcut name. Consider it
+    as an identifier for the node. It will be used programmatically
+    and will be passed around in URLs. The 2nd element is a text which
+    will show up on the HTML page as a link. Each of the subtrees must
+    have the same multiple-triple structure again [b or] must be a
+    single dot 
+    indicating that the respective node is a leaf node. 
+  }
+  ######################
+  h3 - The [em pathvar] and the [em url] parameter
+  p + {
+    The [em pathvar] parameter must contain the name of a
+    variable. It servers two purposes. First, the name will be in URL
+    construction and second, the variable itself must contain a path
+    into the tree. As an example, consider the following call to 
+    [code sidenav] which makes use of [code tcllib]'s package 
+    [code ::ncgi].
+  }
+  dispcode + {
+    set Path \[::ncgi::value Path \[list oview\]\][br]
+    set url \[::ncgi:urlStub\][br]
+    sidenav Path \$url \$Navtree ! { ... }
+  }
+  p + {
+    We use [code ::ncgi::value] to retrieve the selected path into the
+    tree from the calling URL. Just in case the URL was typed in by
+    hand or does not contain the variable [code Path] for other
+    reasons, we specify [code \[list oview\]] as the default path.
+    With [code ::ncgi::urlStub] the URL
+    which called our script is retrieved. All links created in the
+    navigation bar will look like
+  }
+  dispcode - {
+    ${url}?Path=[cgiset $pathForTheLink]
+  }
+  p + {
+    If such a link is followed, the flow of control will arrive again
+    in the script, [code ::ncgi::value] will set [code Path] to the
+    value of [code pathForTheLink] and that path will be marked as
+    selected in the navigation bar.
+  }
+
+  ########################3
+  h3 - The [em control] and [em body] parameters
+  p + {
+    These parameters work like for normal markup commands as
+    described in $xmlgenURL. Within the body, you will most likely
+    want to use the content of the variable passed by [em pathvar] to
+    switch between different contents depending on the selected node.
+  }
+
+  ##########################
+  a name=attributes ! h3 - The [em attr] parameters
+  p + {
+    Syntactically they behave exactly like for normal markup commands as
+    described in $xmlgenURL. However, since [code sidenav] creates an
+    elaborate HTML structure, they end up distributed over several
+    HTML tags.
+  }
+  p + {
+    To understand their meaning, it is necessary to know that 
+    [code sidenav] create a [esc <table>] with two columns. The left
+    column contains the navigation bar and the right one is filled by the 
+    [em body] parameter. Arbitrary attributes can be placed into the 
+    [esc <table>] tag as well as into the [esc <td>] tags of the left
+    and the right column. This is done by prefixing the attributes
+    with [code main.], [code nav.] or [code txt.] respectively.
+  }
+  p + {
+    For example passing [code . nav.width=200] and 
+    [code . nav.bgcolor=gray] to 
+    [code sidenav] will result in a gray navigation bar with a width
+    of 200 pixels. Note that no sanity check is performed on those
+    attributes. They are just pasted into the respective HTML tags.
+  }
+  ######
+  h4 - The [code curColor] attribute
+  p + {
+    There is currently one attribute which is not just pasted into one
+    of the table tags, namely [code curColor] (no prefix necessary). It
+    should be an acceptable color value and determines the text color
+    for the selected branch of the navigation tree.
+  }
+}
+
+showpage [lindex $argv 0] $node $nodeText $shorttitle $page
+########################################################################
+
+### Local Variables: ###
+### mode: tcl ###
+### End: ###

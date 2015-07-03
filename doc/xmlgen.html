@@ -1,0 +1,505 @@
+
+<html>
+<!-- generated with Tcl's xmlgen-1.4 xmlgen] -->
+
+ <head>
+  <title>Xmlgen &mdash; Writing XML with Tcl</title>
+  <style><!--
+    p {margin-left:1cm; text-align:justify; margin-right:1cm;}
+    *.n {margin-left: 0px; margin-right:0px;}
+    *.tab {margin-left: 1cm; margin-right: 1cm;}
+    *.ttab {
+      margin-left:15mm;
+      margin-right:15mm;
+      padding: 1mm;
+      font-family: monospace;
+      background-color: #eeeeee;
+    }
+    ul, ol {list-style-position: inside; text-align:justify;
+      margin-left:5mm; margin-right:20mm;}
+    acronym {font-style: oblique;}
+    -->
+  </style>
+ </head>
+ <body>
+  <table width="100%" style="border: 2px solid grey">
+   <tr>
+    <td width="20%" align="left">Xmlgen</td>
+    <td align="center">Writing XML with Tcl</td>
+    <td width="20%" align="right">xmlgen</td>
+   </tr>
+  </table>
+<h2>Name</h2>
+<p class="tab">Xmlgen &mdash; Writing XML with Tcl</p>
+<h2>Synopsis</h2>
+<p>
+ <code>package require xmlgen</code>
+</p>
+<p>
+ <code>::xmlgen::declaretag <em>funcname</em> <em>?tagname?</em></code>
+</p>
+<p>
+ <code>::xmlgen::doTag <em>tagname</em> <em>?attr=value ...? ?control? ?body ...?</em></code>
+</p>
+<p>
+ <code>::xmlgen::buffer <em>varname</em> <em>body</em></code>
+</p>
+<p>
+ <code>::xmlgen::channel <em>chan</em> <em>body</em></code>
+</p>
+<p>
+ <code>::xmlgen::put <em>?arg ...?</em></code>
+</p>
+<p>
+ <code>::xmlgen::esc <em>?arg ...?</em></code>
+</p>
+<p>
+ <code>::xmlgen::setTagformat <em>which format</em></code>
+</p>
+<p>
+ <code>::xmlgen::makeTagAndBody <em>tagname stuff ?attrary?</em></code>
+</p>
+<h2>Description</h2>
+<p>Due to its clear and concise
+    bracing style, <acronym>Tcl</acronym> is as good or even better suited than
+    <acronym>XML</acronym> to write text markup. Instead of surrounding pieces
+    of text by, e.g. &lt;boo&gt; and &lt;/boo&gt;, a <acronym>Tcl</acronym> command
+    with the name <tt>boo</tt> is defined. The command takes as arguments
+    a list of attribute value pairs and the body of text to
+    be marked up with tags. The text body can again contain
+    markup commands.
+</p>
+<p>You will normally first call 
+    <tt>::xmlgen::declaretag</tt> several times to declare the markup
+    commands. With the generated commands you write your
+    <acronym>XML</acronym>.
+</p>
+<dl class="tab">
+ <dt>
+  <code>::xmlgen::declaretag <em>funcname</em> <em>?tagname?</em></code>
+ </dt>
+ <dd>
+  <p class="n">Creates a markup command with the name <em>funcname</em>. By
+	default the generated tag will be the same as 
+	<em>funcname</em>,
+	but 
+	it can also be explicitly specified with the 2nd
+	argument. The 
+	details about the generated markup commands 
+	are <a href="#markupcmd">described below</a>.
+  </p>
+ </dd>
+ <dt>
+  <code>::xmlgen::doTag <em>tagname</em> <em>?attr=value ...? ?control? ?body ...?</em></code>
+ </dt>
+ <dd>
+  <p class="n">Instead of first declaring a markup command with 
+	<code>declaretag</code>, <code>doTag</code> can be called with the tag
+	name to do exactly what the markup command for that tag name
+	would have done. This is typically used if the tag is needed
+	just once in a document.
+  </p>
+ </dd>
+ <dt>
+  <code>::xmlgen::buffer <em>varname</em> <em>body</em></code>
+ </dt>
+ <dd>
+  <p class="n">Normally, markup commands write their output immediately to
+	standard output. However, when run within the context of 
+	<code>buffer</code>, the output is captured instead in <em>varname</em>.
+  </p>
+ </dd>
+ <dt>
+  <code>::xmlgen::channel <em>chan</em> <em>body</em></code>
+ </dt>
+ <dd>
+  <p class="n">Normally, markup commands write their output immediately to
+	standard output. However, when run within the context of 
+	<code>channel</code>, the output is send to the output channel 
+	<em>chan</em>.
+  </p>
+ </dd>
+ <dt>
+  <code>::xmlgen::put <em>?arg ...?</em></code>
+ </dt>
+ <dd>
+  <p class="n">Is a convenience function to just print a string. In the
+	context of <code>buffer</code> or <code>channel</code> its output is
+	redirected accordingly. In contrast to
+	<acronym>Tcl</acronym>'s <code>puts</code>, <code>put</code> can have many arguments and
+	does not automatically append a newline.
+  </p>
+ </dd>
+ <dt>
+  <code>::xmlgen::esc <em>?arg ...?</em></code>
+ </dt>
+ <dd>
+  <p class="n">Concatenates all arguments and then replaces characters
+	according to the following table:
+  </p>
+  <table align="center" frame="box" cellpadding="1" rules="all">
+   <tr>
+    <th>character</th>
+    <th>replacement</th>
+   </tr>
+   <tr>
+    <td align="center"><code>&amp;</code></td>
+    <td align="center"><code>&amp;amp;</code></td>
+   </tr>
+   <tr>
+    <td align="center"><code>&lt;</code></td>
+    <td align="center"><code>&amp;lt;</code></td>
+   </tr>
+   <tr>
+    <td align="center"><code>&gt;</code></td>
+    <td align="center"><code>&amp;gt;</code></td>
+   </tr>
+   <tr>
+    <td align="center"><code>"</code></td>
+    <td align="center"><code>&amp;#34;</code></td>
+   </tr>
+   <tr>
+    <td align="center"><code>]</code></td>
+    <td align="center"><code>&amp;#93;</code></td>
+   </tr>
+  </table>
+  <p class="n">As a consequence, the result of applying <code>esc</code> can safely
+	be used as character data for <acronym>XML</acronym> elements.
+  </p>
+ </dd>
+ <dt>
+  <code>::xmlgen::setTagformat <em>which format</em></code>
+ </dt>
+ <dd>
+  <p class="n">This proc allows some control over the white space to put around
+	generated XML tags in order to pretty print the resulting
+	XML. The formatting can be controlled individually for open
+	and close tag for each of the four control characters
+	<code>"+-.!"</code>. You may have to read the
+	<a href="#markupcmd">section below</a> on markup commands to
+	understand the meaning of the control characters.
+  </p>
+  <p class="n">Parameter <em>which</em> is a combination of one control character
+	and either <code>"o"</code> or <code>"c"</code>. In <em>format</em> you
+	should pass a string which, when passed through 
+	<code>[subst]</code>, creates the tag with some surrounding white
+	space or indentation. The substitution will take place in a
+	context where <code>$tag</code> contains the opening or closing tag
+	and <code>$indent</code> contains just the right amount of space
+	characters for proper indentation.
+  </p>
+  <p class="n">The default settings for tag formatting are as follows:
+  </p>
+  <table align="center" rules="none" cellpadding="3" frame="void"><colgroup span="2" /><colgroup span="2" />
+   <tr>
+    <th style="border:solid 1px; margin:0px"><em>which</em></th>
+    <th style="border:solid 1px; margin:0px"><em>format</em></th>
+    <th style="border-style:none">&nbsp;&nbsp;&nbsp;</th>
+    <th style="border:solid 1px; margin:0px"><em>which</em></th>
+    <th style="border:solid 1px; margin:0px"><em>format</em></th>
+   </tr>
+   <tr>
+    <td style="border:solid 1px; margin:0px" align="right"><code>!o</code></td>
+    <td style="border:solid 1px; margin:0px"><code>\n$indent$tag</code></td><td style="border-style:none" />
+    <td style="border:solid 1px; margin:0px" align="right"><code>!c</code></td>
+    <td style="border:solid 1px; margin:0px"><code>\n$indent$tag</code></td>
+   </tr>
+   <tr>
+    <td style="border:solid 1px; margin:0px" align="right"><code>+o</code></td>
+    <td style="border:solid 1px; margin:0px"><code>\n$indent$tag</code></td><td style="border-style:none" />
+    <td style="border:solid 1px; margin:0px" align="right"><code>+c</code></td>
+    <td style="border:solid 1px; margin:0px"><code>\n$indent$tag</code></td>
+   </tr>
+   <tr>
+    <td style="border:solid 1px; margin:0px" align="right"><code>-o</code></td>
+    <td style="border:solid 1px; margin:0px"><code>\n$indent$tag</code></td><td style="border-style:none" />
+    <td style="border:solid 1px; margin:0px" align="right"><code>-c</code></td>
+    <td style="border:solid 1px; margin:0px"><code>$tag</code></td>
+   </tr>
+   <tr>
+    <td style="border:solid 1px; margin:0px" align="right"><code>.o</code></td>
+    <td style="border:solid 1px; margin:0px"><code>$tag</code></td><td style="border-style:none" />
+    <td style="border:solid 1px; margin:0px" align="right"><code>.c</code></td>
+    <td style="border:solid 1px; margin:0px"><code>$tag</code></td>
+   </tr>
+  </table>
+  <p class="n">To implement a totally different indentation scheme, you may
+	override the proc
+  </p>
+  <p class="ttab">::xmlgen::formatTag <em>which indent tag</em>
+  </p>
+  <p class="n">It must return the formatted tag.
+  </p>
+ </dd>
+ <dt>
+  <code>::xmlgen::makeTagAndBody <em>tagname stuff ?attrary?</em></code>
+ </dt>
+ <dd>
+  <p class="n">This is the function called by a markup command to analyse
+	its command line. Parameter <em>stuff</em> is the list of arguments
+	which where passed to the markup command. It is parsed into
+	attribute-value pairs, an optional control character and the
+	body. The <em>tagname</em> and the 
+	attribute-value pairs are assembled into an <acronym>XML</acronym> open
+	tag. Finally a four-element list like
+  </p>
+  <p class="ttab">[list $opentag $control $body $closetag]</p>
+  <p class="n">is returned.
+  </p>
+  <p class="n">Parameter <em>attrary</em> is not used by the normal markup
+	commands. It supports the implementation of so called 
+	<em>markup macros</em>
+	which will look like markup commands but generate more elaborate
+	markup than just a pair of tags and a body. When calling 
+	<code>makeTagAndBody</code>, the macro can pass the name of an array
+	in <em>attrary</em>. If <code>makeTagAndBody</code> finds an attribute
+	which is a key (index) of the array, it <b>does not</b> include
+	it in the opening tag but stores the value in the array. As an
+	example of a macro implementation have a look at 
+	<code>::hmtlgen::tab</code>.
+  </p>
+ </dd>
+</dl>
+<h2>An Example</h2>
+<p>Load xmlgen, import the commands and declare two tags.</p>
+<p class="ttab">package require xmlgen <br />
+    namespace import ::xmlgen::* <br />
+    declaretag voo <br />
+    declaretag doo <br />
+</p>
+<p>Generate and write some tagged text, attributes included.</p>
+<p class="ttab">voo color=red align=left ! { <br />
+      &nbsp; doo - some text for doo<br />
+      &nbsp; doo - another doo element<br />
+      &nbsp; put text on the voo-level<br />
+    }
+</p>
+<p>The result will look like this:</p>
+<p class="ttab">&lt;voo color="red" align="left"&gt;<br />
+    &nbsp; &lt;doo&gt;doo some text for doo&lt;/doo&gt;<br />
+    &nbsp; &lt;doo&gt;another doo element&lt;/doo&gt;<br />
+    &nbsp; text on the voo-level<br />
+    &lt;/voo&gt;
+</p>
+<p>Note how the two markup commands handle their body arguments
+    differently depending on the control characters "<code>!</code>" and 
+    "<code>-</code>" just before the body.
+    Command <code>voo</code> evaluates its body argument, while
+    <code>doo</code> takes the argument list as is and prints it out. The
+    details about the control characters are 
+    <a href="#markupcmd">described below</a>.
+</p>
+<a name="markupcmd">
+ <h2>Generated Markup Commands</h2>
+</a>
+<p>When you run</p>
+<p class="ttab">::xmlgen::declaretag boo</p>
+<p>the markup command <code>boo</code> is defined as
+</p>
+<p class="ttab">boo <em>?attr=value ...? ?control? ?body ...?</em>
+</p>
+<p>The command accepts three kinds of arguments which must appear in
+    the order given:
+</p>
+<ol>
+ <li>attribute-value pairs,</li>
+ <li>a control character,</li>
+ <li>body text.</li>
+</ol>
+<p>All arguments are optional. How they are identified and handled is
+    described below.
+</p>
+<h3 class="tab">Attribute Value Pairs</h3>
+<p>An argument is considered an attribute-value pair, if one of the
+    following conditions hold.
+</p>
+<ol>
+ <li>It is the empty string.</li>
+ <li>it satisfies the following regular expression:  
+      <p class="ttab">^ *([A-Za-z_:&#93;[a-zA-Z0-9_.:-&#93;*)=(.*)</p>
+      This requires an attribute-value pair to consist of
+      optional blanks, an
+      attribute name comprising one or more of the characters
+      "<code>a-zA-Z0-9_-</code>", an immediately following equal
+      sign and something else. Everything after the equal sign is taken
+      as the value.
+ </li>
+</ol>
+<p>The first argument which does not satisfy the above conditions
+    stops processing of attribute-value pairs. Later arguments
+    matching the expression are <b>not</b> taken as attribute-value
+    pairs.
+</p>
+<p>Every attribute-value pair must be a <em>word</em> in
+    the <acronym>Tcl</acronym> sense. Enclose it in quotes or
+    braces if it contains blanks or other characters which
+    trigger special <acronym>Tcl</acronym>-behaviour. 
+    For example an <acronym>HTML</acronym> <code>style</code> attribute must be
+    written as:
+</p>
+<p class="ttab">boo {style=border: solid 2px red;} {body stuff}
+</p>
+<p>The whole attribute-value pair is enclosed in braces to make
+    sure that <code>boo</code> sees it as one argument.
+</p>
+<p>The resulting <acronym>XML</acronym> will be.</p>
+<p class="ttab">&lt;boo style="border: solid 2px red;">body stuff&lt;/boo&gt;
+</p>
+<p>Note how the attribute's value is automatically enclosed in quotes
+    in the <acronym>XML</acronym> output. In fact you <b>must not</b> supply the quotes
+    around the value yourself, except if you really want them to be
+    part the the value. Nevertheless you <em>can</em> put quotes into the
+    value if they belong there. They will be sufficiently escaped to
+    not corrupt the <acronym>XML</acronym> syntax, i.e.
+</p>
+<p class="ttab">boo quote=\" - some text</p>
+<p>will result in
+</p>
+<p class="ttab">&lt;boo quote=&#34;&amp;#34;&#34;&gt;some text<br />&lt;/boo&gt;
+</p>
+<a name="controlchar">
+ <h3 class="tab">Control Character</h3>
+</a>
+<p>If the first argument which is not an attribute-value pair
+    consists of a single character, it is taken as the control
+    character. It decides how the body is handled (see below).
+</p>
+<p>Currently the control characters "<code>!+-.</code>" are defined.
+    If the first argument after the attribute-value pairs contains
+    only a single character which is not defined as a control
+    character, an error is generated. To get rid of the error, add the
+    default control character "<code>.</code>" (dot) as an extra argument
+    just in front of the first body argument.
+</p>
+<h3 class="tab">Handling the Body</h3>
+<p>In general, two independent 
+    dimensions of handling the body can be distinguished:
+</p>
+<ol>
+ <li>The body can be
+  <ul>
+   <li>taken as is,</li>
+   <li>passed to <code>[subst]</code> or</li>
+   <li>passed to <code>[eval]</code>.</li>
+  </ul>
+ </li>
+ <li>The resulting text can be either
+  <ul>
+   <li>returned to the calling function or</li>
+   <li>printed or collected in a variable when in the scope of 
+	  <code>::xmlgen::buffer</code>.
+   </li>
+  </ul>
+ </li>
+</ol>
+<p>Taken together, there are six possible combinations. Four of the
+    six are supported by every markup function. The 
+    <em>control character</em>
+    decides which one to use as summarized in the following table.
+</p>
+<table align="center" cellpadding="3" frame="box" rules="all">
+ <tr>
+  <th>&nbsp</th>
+  <th>print</th>
+  <th>return</th>
+ </tr>
+ <tr>
+  <th align="right">eval</th>
+  <td align="center">"<code>!</code>" (exlam. mark)</td>
+  <td align="center" rowspan="2"><small>not<br />implemented</small></td>
+ </tr>
+ <tr>
+  <th align="right">subst</th>
+  <td align="center">"<code>+</code>" (plus)</td>
+ </tr>
+ <tr>
+  <th align="right">as is</th>
+  <td align="center">"<code>-</code>" (minus)</td>
+  <td align="center">"<code>.</code>" (dot)</td>
+ </tr>
+ <caption>Control Characters and their Function.
+ </caption>
+</table>
+<p>If no control character is specified, "<code>.</code>" (dot) is
+    assumed.
+</p>
+<p>The function of the four control characters are described below in
+    more detail.</p>
+<h4 class="tab">Eval and Print: <code>!</code></h4>
+<p>This is most useful for markup commands which contain a lot of
+    inner structure, like <acronym>HTML</acronym>'s <code>table</code>, <code>form</code> or 
+    <code>body</code>.
+</p>
+<p class="ttab">html ! {<br />
+      &nbsp;  body ! {<br />
+	&nbsp;&nbsp; # Tcl commands go here<br />
+	&nbsp;}<br />
+    }
+</p>
+<p>Due to the "<code>!</code>", the body of <code>html</code> is evaluated
+    which in particular means that the command <code>body</code> is
+    run. Since <code>body</code> is again followed by "<code>!</code>", the
+    commands in its body are evaluated and whatever output they
+    produce will be enclosed in <code>&lt;body&gt;</code>
+    and <code>&lt;/body&gt;</code>.
+</p>
+<p>Another example use of "<code>!</code>" is:
+</p>
+<p class="ttab">tr ! td - the only column in this row
+</p>
+<p>where <code>tr</code> runs <code>td</code> while enclosing its output in
+    <code>&lt;tr&gt;</code> and <code>&lt;/tr&gt;</code>.
+</p>
+<h4 class="tab">Subst and Print: "+"</h4>
+<p>When the control character is a plus sign,
+    the body is passed through <code>[subst]</code>. You will most
+    frequently use it for tags which contain text 
+    which needs markup. The typical example is <acronym>HTML</acronym>'s tag
+    "<code>p</code>".
+</p>
+<p class="ttab">p + {<br />
+      &nbsp; Subst allows to [b put things in bold].<br />
+    }
+</p>
+<p>You could in fact produce the same result with
+</p>
+<p class="ttab">p - Subst allows to [b put things in bold]</p>
+<p>but the former allows you to easier write long paragraphs
+    without the necessity to escape the end of the line in the
+    source code.
+</p>
+<h4 class="tab">Just Print: "-"</h4>
+<p>The minus as the control character instructs the markup
+    function to print the body argument <em>as is</em>. Note however, that
+    <acronym>Tcl</acronym> has its chance to expand the markup function's parameter 
+    <em>before</em> the function is even called.
+</p>
+<p class="ttab">boo - Some text [doo with markup inline]</p>
+<p>will generate</p>
+<p class="ttab">&lt;boo&gt;Some text &lt;doo&gt;with markup inline&lt;/doo&gt;&lt;/boo&gt;
+</p>
+<p>because when <code>boo</code> is actually called, <code>doo</code> was already
+    run by the <acronym>Tcl</acronym> interpreter.
+</p>
+<h4 class="tab">Just Return: "."</h4>
+<p>When the control character is the dot, the body is not changed in
+    any way and not even printed. Instead the markup command returns
+    it as is:
+</p>
+<p class="ttab">set phrase [big [big some big text]]</p>
+<p>will set the variable <code>phrase</code> to</p>
+<p class="ttab">&lt;big&gt;&lt;big&gt;some big text&lt;/big&gt;&lt;/big&gt;</p>
+<h2>Author</h2>
+<p><a href="mailto:pifpafpuf@gmx.de">Harald Kirsch</a></p>
+  <h2>See Also</h2>
+  <p><a href="overview.html">Overview</a>, <a href="htmlgen.html">Htmlgen</a>, <a href="tab.html">Notebook Tabs</a>, <a href="sidenav.html">Navigation Bar</a>
+  </p>
+  <table width="100%" style="border: 2px solid grey">
+   <tr>
+    <td width="30%" align="left">Xmlgen</td>
+    <td align="center">1.4</td>
+    <td width="30%" align="right">xmlgen</td>
+   </tr>
+  </table>
+ </body>
+</html>

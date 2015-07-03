@@ -1,0 +1,68 @@
+#!/bin/sh
+#\
+exec tclsh $0 -all "$@"
+########################################################################
+#
+# Given that this package deals with generating xml and is the base
+# for package htmlgen, it should come as no surprise, that the
+# documentation is written with the package htmlgen.
+#
+# This script is not expected to be installed. It must be run as part
+# of a built process to generate the documentation.
+#
+# (C) 2002 Harald Kirsch
+# $Revision: 1.2 $, $Date: 2002/05/27 21:50:54 $
+########################################################################
+
+if {[lindex $argv 0]=="-all"} {
+  ## This script was called on its own, not as part of another script. 
+  set auto_path [concat [file dir [pwd]] $auto_path]
+  package require htmlgen
+  namespace import ::htmlgen::*
+  set xmlgenURL [a href=xmlgen.html xmlgen]
+
+  source common.tcl
+
+} else {
+  set xmlgenURL [a href=${url}?Path=xmlgen [code . xmlgen]]
+}
+
+set node overview
+set nodeText [getNodeText $node $navbar]
+set shorttitle  "Packages to write XML or HTML with Tcl"
+
+buffer page {
+  h2 - Name
+  p class=tab - [makeTitle $nodeText $shorttitle]
+  h2 - Description
+
+  p + {
+    The $::Tcl package [code xmlgen] allows to write $::Tcl code which
+    translates itself into $::XML.
+  }
+  p + {
+    Every tag is made into a [em markup command] which takes
+    attributes and the element's content as parameters and then prints
+    the $::XML tagged content. Of course, the content again can contain
+    markup commands.
+  }
+  p + {
+    On top of [code xmlgen] there is the package [code htmlgen] which
+    comes with all the typical $::HTML tags predefined as markup
+    commands. In addition, sub-namespaces of [code ::htmlgen]
+    contain what you
+    could call [code markup macros]. A markup macro's syntax resembles the
+    syntax of a markup command but creates not just a pair of tags
+    with content but a whole structure of tags nested always in the
+    same way. Currently [code htmlgen::tab] and 
+    [code htmlgen::sidenav] implement common navigation
+    structures for $::HTML sites.
+  }
+}
+
+showpage [lindex $argv 0] $node $nodeText $shorttitle $page
+########################################################################
+
+### Local Variables: ###
+### mode: tcl ###
+### End: ###

@@ -1,0 +1,47 @@
+## try to fetch all files containing inner classes of a given class file
+proc expandClass {c} {
+  set head [file root $c]
+  return [glob $c ${head}\$*.class]
+}
+ 
+##
+## How to make a jar
+##
+## This need the following var set:
+## PKGROOTDIR -- the directory below which the package directory can
+## be found, i.e. for a package bla.bli, there must exist
+## $PKGROOTDIR/bla/bli.
+##
+PatternMake .*\.jar .class {[older $target $d]} {
+  set pwd [pwd]
+  cd $PKGROOTDIR
+
+  ## collect the list of class files, taking into accound inner
+  ## classes.
+  set l {}
+  #puts $deps
+  foreach d $deps {
+    switch -glob -- $d {
+      *.class {
+        set d [file join $PKGDIR [file tail $d]]
+        set l [concat $l [expandClass $d]]
+      }
+      *.jar {
+        ## we use a jar-file dependency only to find out which files
+        ## we want in this new jar-file.
+        set d [file join $pwd $d]
+        #puts $d
+        foreach f [split [exec jar tf $d] \n] {
+          if {[string match META-INF* $f]} continue
+          lappend l $f
+        }
+      }
+      default {
+        lappend l $d
+      }
+    }
+  }
+  #puts $l
+  set jarfile [file join $pwd $target]
+  jar cf $jarfile $l
+}

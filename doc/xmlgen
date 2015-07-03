@@ -1,0 +1,554 @@
+#!/bin/sh
+#\
+exec tclsh $0 -all "$@"
+########################################################################
+#
+# Given that this package deals with generating xml and is the base
+# for package htmlgen, it should come as no surprise, that the
+# documentation is written with the package htmlgen.
+#
+# This script is not expected to be installed. It must be run as part
+# of a built process to generate the documentation.
+#
+# (C) 2002 Harald Kirsch
+# $Revision: 1.4 $, $Date: 2002/09/21 14:55:58 $
+########################################################################
+if {[lindex $argv 0]=="-all"} {
+  ## This script was called on its own, not as part of another script. 
+  set auto_path [concat [file dir [pwd]] $auto_path]
+  package require htmlgen
+  namespace import ::htmlgen::*
+
+  source common.tcl
+
+} else {
+}
+
+set node xmlgen
+set nodeText [getNodeText $node $navbar]
+set shorttitle  "Writing XML with Tcl"
+
+## The main text
+buffer page {
+  h2 - Name
+  p class=tab - [makeTitle $nodeText $shorttitle]
+
+  h2 - Synopsis
+  p ! code - package require xmlgen
+  p ! code - ::xmlgen::declaretag [em funcname] [em ?tagname?]
+  set doTagArgs [em ?attr=value ...? ?control? ?body ...?]
+  p ! code - ::xmlgen::doTag [em tagname] $doTagArgs
+  p ! code - ::xmlgen::buffer [em varname] [em body]
+  p ! code - ::xmlgen::channel [em chan] [em body]
+  p ! code - ::xmlgen::put [em ?arg ...?]
+  p ! code - ::xmlgen::esc [em ?arg ...?]
+  p ! code - ::xmlgen::setTagformat [em which format]
+  p ! code - ::xmlgen::makeTagAndBody [em tagname stuff ?attrary?]
+
+  h2 - Description
+  p + {
+    Due to its clear and concise
+    bracing style, $Tcl is as good or even better suited than
+    $XML to write text markup. Instead of surrounding pieces
+    of text by, e.g. [esc <boo>] and [esc </boo>], a $Tcl command
+    with the name [tt boo] is defined. The command takes as arguments
+    a list of attribute value pairs and the body of text to
+    be marked up with tags. The text body can again contain
+    markup commands. 
+  }
+  p + {
+    You will normally first call 
+    [tt ::xmlgen::declaretag] several times to declare the markup
+    commands. With the generated commands you write your
+    $XML.
+  }
+  
+  dl class=tab ! {
+    dt ! code - ::xmlgen::declaretag [em funcname] [em ?tagname?]
+    dd ! {
+      p class=n + {
+	Creates a markup command with the name [em funcname]. By
+	default the generated tag will be the same as 
+	[em funcname],
+	but 
+	it can also be explicitly specified with the 2nd
+	argument. The 
+	details about the generated markup commands 
+	are [a href=\#markupcmd described below].
+      }
+    }
+    dt ! code - ::xmlgen::doTag [em tagname] $doTagArgs
+    dd ! {
+      p class=n + {
+	Instead of first declaring a markup command with 
+	[code declaretag], [code doTag] can be called with the tag
+	name to do exactly what the markup command for that tag name
+	would have done. This is typically used if the tag is needed
+	just once in a document.
+      }
+
+    }
+    dt ! code - ::xmlgen::buffer [em varname] [em body]
+    dd ! {
+      p class=n + {
+	Normally, markup commands write their output immediately to
+	standard output. However, when run within the context of 
+	[code buffer], the output is captured instead in [em varname].
+      }
+    }
+    dt ! code - ::xmlgen::channel [em chan] [em body]
+    dd ! {
+      p class=n + {
+	Normally, markup commands write their output immediately to
+	standard output. However, when run within the context of 
+	[code channel], the output is send to the output channel 
+	[em chan].
+      }
+    }
+    dt ! code - ::xmlgen::put [em ?arg ...?]
+    dd ! {
+      p class=n + {
+	Is a convenience function to just print a string. In the
+	context of [code buffer] or [code channel] its output is
+	redirected accordingly. In contrast to
+	$Tcl's [code puts], [code put] can have many arguments and
+	does not automatically append a newline.
+      }
+    }
+    dt ! code - ::xmlgen::esc [em ?arg ...?]
+    dd ! {
+      p class=n + {
+	Concatenates all arguments and then replaces characters
+	according to the following table:
+      }
+      table align=center frame=box cellpadding=1 rules=all ! {
+	tr ! {
+	  th - character 
+	  th - replacement
+	}
+	tr ! {
+	  td align=center - [code [esc &]]
+	  td align=center - [code [esc &amp\;]]
+	}
+	tr ! {
+	  td align=center - [code [esc <]]
+	  td align=center - [code [esc &lt\;]]
+	}
+	tr ! {
+	  td align=center - [code [esc >]]
+	  td align=center - [code [esc &gt\;]]
+	}
+	tr ! {
+	  td align=center - [code . \"]
+	  td align=center - [code [esc &\#34\;]]
+	}
+	tr ! {
+	  td align=center - [code . \]]
+	  td align=center - [code [esc &\#93\;]]
+	}
+      }
+      p class=n + {
+	As a consequence, the result of applying [code esc] can safely
+	be used as character data for $XML elements.
+      }
+    }
+    dt ! code - ::xmlgen::setTagformat [em which format]
+    dd ! {
+      p class=n + {
+	This proc allows some control over the white space to put around
+	generated XML tags in order to pretty print the resulting
+	XML. The formatting can be controlled individually for open
+	and close tag for each of the four control characters
+	[code \"+-.!\"]. You may have to read the
+	[a href=\#markupcmd section below] on markup commands to
+	understand the meaning of the control characters.
+      }
+      p class=n + {
+	Parameter [em which] is a combination of one control character
+	and either [code \"o\"] or [code \"c\"]. In [em format] you
+	should pass a string which, when passed through 
+	[code \[subst\]], creates the tag with some surrounding white
+	space or indentation. The substitution will take place in a
+	context where [code \$tag] contains the opening or closing tag
+	and [code \$indent] contains just the right amount of space
+	characters for proper indentation.
+      }
+      p class=n + {
+	The default settings for tag formatting are as follows:
+      }
+      set style {style=border:solid 1px; margin:0px}
+      table align=center rules=none cellpadding=3 frame=void ! { 
+	colgroup span=2 -
+	colgroup span=2 -
+	
+	tr ! {
+	  th $style - [em which]
+	  th $style - [em format]
+	  th style=border-style:none - "&nbsp;&nbsp;&nbsp;"
+	  th $style - [em which]
+	  th $style - [em format]
+	}
+	foreach {c o} [lsort [array names ::xmlgen::tagformat]] {
+	  tr ! {
+	    td $style align=right - [code $o]
+	    td $style - [code $::xmlgen::tagformat($o)]
+	    td style=border-style:none -
+	    td $style align=right - [code $c]
+	    td $style - [code $::xmlgen::tagformat($c)]
+	  }
+	}
+      }
+
+      p class=n + {
+	To implement a totally different indentation scheme, you may
+	override the proc 
+      }
+      dispcode + {
+	::xmlgen::formatTag [em which indent tag]
+      }
+      p class=n + {
+	It must return the formatted tag.
+      }
+    }
+    dt ! code - ::xmlgen::makeTagAndBody [em tagname stuff ?attrary?]
+    dd ! {
+      p class=n + {
+	This is the function called by a markup command to analyse
+	its command line. Parameter [em stuff] is the list of arguments
+	which where passed to the markup command. It is parsed into
+	attribute-value pairs, an optional control character and the
+	body. The [em tagname] and the 
+	attribute-value pairs are assembled into an $XML open
+	tag. Finally a four-element list like
+      }
+      dispcode - {
+	[list $opentag $control $body $closetag] 
+      }      
+      p class=n + {
+	is returned. 
+      }
+      p class=n + {
+	Parameter [em attrary] is not used by the normal markup
+	commands. It supports the implementation of so called 
+	[em markup macros]
+	which will look like markup commands but generate more elaborate
+	markup than just a pair of tags and a body. When calling 
+	[code makeTagAndBody], the macro can pass the name of an array
+	in [em attrary]. If [code makeTagAndBody] finds an attribute
+	which is a key (index) of the array, it [b does not] include
+	it in the opening tag but stores the value in the array. As an
+	example of a macro implementation have a look at 
+	[code ::hmtlgen::tab].
+      }
+    }
+  }
+  
+  h2 - An Example
+  p - Load xmlgen, import the commands and declare two tags.
+  dispcode + {
+    package require xmlgen [br]
+    namespace import ::xmlgen::* [br]
+    declaretag voo [br]
+    declaretag doo [br]
+  }
+  p - Generate and write some tagged text, attributes included.
+  dispcode + {
+    voo color=red align=left ! { [br]
+      &nbsp; doo - some text for doo[br]
+      &nbsp; doo - another doo element[br]
+      &nbsp; put text on the voo-level[br]
+    }
+  }
+  p - The result will look like this:
+
+  dispcode + {
+    [esc <voo] color="red" align="left"[esc >][br]
+    &nbsp; [esc <doo>]doo some text for doo[esc </doo>][br]
+    &nbsp; [esc <doo>]another doo element[esc </doo>][br]
+    &nbsp; text on the voo-level[br]
+    [esc </voo>]
+  }
+  
+  p + {
+    Note how the two markup commands handle their body arguments
+    differently depending on the control characters "[code . !]" and 
+    "[code . - ]" just before the body.
+    Command [code voo] evaluates its body argument, while
+    [code doo] takes the argument list as is and prints it out. The
+    details about the control characters are 
+    [a href=\#markupcmd described below].
+  }
+
+  ######
+  a name=markupcmd ! h2 - Generated Markup Commands
+  p - When you run
+  dispcode - ::xmlgen::declaretag boo
+  p + {
+    the markup command [code boo] is defined as
+  }
+  dispcode + {
+    boo $doTagArgs
+  }
+  p + {
+    The command accepts three kinds of arguments which must appear in
+    the order given:
+  }
+  ol ! {
+    li - attribute-value pairs,
+    li - a control character,
+    li - body text.
+  }
+  p + {
+    All arguments are optional. How they are identified and handled is
+    described below.
+  }
+
+  ######
+  h3 class=tab - Attribute Value Pairs
+  p + {
+    An argument is considered an attribute-value pair, if one of the
+    following conditions hold.
+  }
+  ol ! {
+    li - It is the empty string.
+    li + {
+      it satisfies the following regular expression:  
+      [dispcode  [esc $::xmlgen::attrre]]
+      This requires an attribute-value pair to consist of
+      optional blanks, an
+      attribute name comprising one or more of the characters
+      "[code a-zA-Z0-9_-]", an immediately following equal
+      sign and something else. Everything after the equal sign is taken
+      as the value. 
+    }
+  }
+  p + {
+    The first argument which does not satisfy the above conditions
+    stops processing of attribute-value pairs. Later arguments
+    matching the expression are [b not] taken as attribute-value
+    pairs. 
+  }
+  p + {    
+    Every attribute-value pair must be a [em word] in
+    the $Tcl sense. Enclose it in quotes or
+    braces if it contains blanks or other characters which
+    trigger special $Tcl-behaviour. 
+    For example an [acronym HTML] [code style] attribute must be
+    written as:
+  }
+  dispcode + {
+    boo {style=border: solid 2px red;} {body stuff}
+  }
+  p + {
+    The whole attribute-value pair is enclosed in braces to make
+    sure that [code boo] sees it as one argument.
+  }
+  p - The resulting $XML will be.
+  dispcode + {
+    [esc <boo] style="border: solid 2px red;">body stuff[esc </boo>]
+  }
+  p + {
+    Note how the attribute's value is automatically enclosed in quotes
+    in the $XML output. In fact you [b must not] supply the quotes
+    around the value yourself, except if you really want them to be
+    part the the value. Nevertheless you [em can] put quotes into the
+    value if they belong there. They will be sufficiently escaped to
+    not corrupt the $XML syntax, i.e.
+  }
+  dispcode - {
+    boo quote=\" - some text
+  }
+  p + {
+    will result in 
+  }
+  dispcode ! {
+    put [esc  <boo quote="[esc \"]">some text][br][esc </boo>]
+  }
+  #####
+  a name=controlchar ! h3 class=tab - Control Character
+  p + {
+    If the first argument which is not an attribute-value pair
+    consists of a single character, it is taken as the control
+    character. It decides how the body is handled (see below).
+  }
+  p + {
+    Currently the control characters "[code . !+-.]" are defined.
+    If the first argument after the attribute-value pairs contains
+    only a single character which is not defined as a control
+    character, an error is generated. To get rid of the error, add the
+    default control character "[code . .]" (dot) as an extra argument
+    just in front of the first body argument.
+  }
+
+  #####
+  h3 class=tab - Handling the Body
+
+  p + {
+    In general, two independent 
+    dimensions of handling the body can be distinguished:
+  }
+  ol ! {
+    li ! {
+      put The body can be
+      ul ! {
+	li - taken as is,
+	li - passed to [code \[subst\]] or
+	li - passed to [code \[eval\]].
+      }
+    }
+    li ! {
+      put The resulting text can be either
+      ul ! {
+	li - returned to the calling function or
+	li + {
+	  printed or collected in a variable when in the scope of 
+	  [code ::xmlgen::buffer].
+	}
+      }
+    }
+  }
+  p + {
+    Taken together, there are six possible combinations. Four of the
+    six are supported by every markup function. The 
+    [em control character]
+    decides which one to use as summarized in the following table.
+  }
+  table align=center cellpadding=3 frame=box rules=all ! {
+    tr ! {
+      th - &nbsp;
+      th - print
+      th - return
+    }
+    tr ! {
+      th align=right - eval
+      td align=center - \"[code . !]\" (exlam. mark)
+      td align=center rowspan=2 - [small not[br]implemented]
+    }
+    tr ! {
+      th align=right - subst
+      td align=center - \"[code . +]\" (plus)
+      #td align=center - not implemented
+    }
+    tr ! {
+      th align=right - as is
+      td align=center - \"[code . -]\" (minus)
+      td align=center - \"[code . .]\" (dot)
+    }
+    caption + {
+      Control Characters and their Function.
+    }
+  }
+  p + {
+    If no control character is specified, "[code . .]" (dot) is
+    assumed. 
+  }
+  p - {
+    The function of the four control characters are described below in
+    more detail.
+  }
+
+
+  h4 class=tab - Eval and Print: "[code . !]"
+  p + {
+    This is most useful for markup commands which contain a lot of
+    inner structure, like $HTML's [code table], [code form] or 
+    [code body].
+  }
+
+  dispcode + {
+    html ! {[br]
+      &nbsp;  body ! {[br]
+	&nbsp;&nbsp; \# Tcl commands go here[br]
+	&nbsp;}[br]
+    }
+  }
+  
+  p + {
+    Due to the "[code . !]", the body of [code html] is evaluated
+    which in particular means that the command [code body] is
+    run. Since [code body] is again followed by "[code . !]", the
+    commands in its body are evaluated and whatever output they
+    produce will be enclosed in [code [esc <body>]]
+    and [code [esc </body>]].
+    
+  }
+  p + {
+    Another example use of "[code . !]" is:
+  }
+  dispcode + {
+    tr ! td - the only column in this row
+  }
+  p + {
+    where [code tr] runs [code td] while enclosing its output in
+    [code [esc <tr>]] and [code [esc </tr>]].
+  }
+
+
+  h4 class=tab - Subst and Print: \"+\"
+  p + { 
+    When the control character is a plus sign,
+    the body is passed through [code \[subst\]]. You will most
+    frequently use it for tags which contain text 
+    which needs markup. The typical example is [acronym HTML]'s tag
+    "[code . p]".
+  }
+  dispcode + {
+    p + {[br]
+      &nbsp; Subst allows to \[b put things in bold\].[br]
+    }
+  }
+  p + {
+    You could in fact produce the same result with
+  }
+  dispcode - {
+    p - Subst allows to [b put things in bold]
+  }
+  p + {
+    but the former allows you to easier write long paragraphs
+    without the necessity to escape the end of the line in the
+    source code.
+  }
+    
+
+  h4 class=tab - Just Print: \"-\"
+  p + {
+    The minus as the control character instructs the markup
+    function to print the body argument [em as is]. Note however, that
+    $Tcl has its chance to expand the markup function's parameter 
+    [em before] the function is even called.
+  }
+  dispcode - {
+    boo - Some text [doo with markup inline]
+  }
+  p - will generate
+  dispcode + {
+    [esc <boo>Some text <doo>with markup inline</doo></boo>]
+  }
+  p + {
+    because when [code boo] is actually called, [code doo] was already
+    run by the $Tcl interpreter.
+  }
+
+  h4 class=tab - Just Return: \".\"
+  p + {
+    When the control character is the dot, the body is not changed in
+    any way and not even printed. Instead the markup command returns
+    it as is:
+  }
+  
+  dispcode - {
+    set phrase [big [big some big text]]
+  }
+  p - will set the variable [code phrase] to
+  dispcode - [esc <big><big>some big text</big></big>]
+
+  h2 - Author
+  p -  [a {href=mailto:pifpafpuf@gmx.de} Harald Kirsch]
+}
+
+showpage [lindex $argv 0] $node $nodeText $shorttitle $page
+########################################################################
+
+### Local Variables: ###
+### mode: tcl ###
+### End: ###
